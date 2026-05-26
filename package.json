@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
     "express": "^5.1.0",
