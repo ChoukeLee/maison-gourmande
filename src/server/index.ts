@@ -299,7 +299,7 @@ async function sendWhatsAppMessage(to: string, text: string) {
 // ============================================================================
 // Start
 // ============================================================================
-const PORT = 3456;
+const PORT = process.env["PORT"] ?? 3456;
 app.listen(PORT, () => {
   console.log(`\n  🍽️  Maison Gourmande`);
   console.log(`  Chat:    http://localhost:${PORT}`);
