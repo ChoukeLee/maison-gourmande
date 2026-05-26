@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "chat": "tsx src/cli/chat.ts",
     "serve": "tsx src/server/index.ts",
-    "generate-menu": "tsx scripts/build-menu.ts"
+    "generate-menu": "tsx scripts/build-menu.ts",
+    "whatsapp": "tsx scripts/whatsapp-bot.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -20,7 +21,9 @@
     "dotenv": "^16.4.0",
     "express": "^5.1.0",
     "localtunnel": "^2.0.2",
-    "tsx": "^4.22.3"
+    "qrcode-terminal": "^0.12.0",
+    "tsx": "^4.22.3",
+    "whatsapp-web.js": "^1.34.7"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
