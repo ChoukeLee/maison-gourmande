@@ -214,10 +214,20 @@ app.get("/api/whatsapp/webhook", (req, res) => {
   }
 });
 
+// Diagnostic: last received webhook payload
+let lastWebhook: { time: string; body: unknown } | null = null;
+
+app.get("/api/whatsapp/debug", (_req, res) => {
+  res.json({ lastWebhook, serverTime: new Date().toISOString() });
+});
+
 // POST — incoming WhatsApp messages
 app.post("/api/whatsapp/webhook", async (req, res) => {
   try {
     const body = req.body;
+    lastWebhook = { time: new Date().toISOString(), body };
+    console.log("📱 WhatsApp webhook received:", JSON.stringify(body).slice(0, 200));
+
     const entry = body?.entry?.[0];
     const change = entry?.changes?.[0];
     const value = change?.value;
