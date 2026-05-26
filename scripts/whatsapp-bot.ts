@@ -7,8 +7,9 @@
  */
 
 import "dotenv/config";
-import { Client, LocalAuth, type Message } from "whatsapp-web.js";
-import * as qrcode from "qrcode-terminal";
+import { Client, type Message } from "whatsapp-web.js";
+import http from "node:http";
+import QRCode from "qrcode";
 import { chat, newConversation } from "../src/services/agent.js";
 
 // Store per-customer sessions
@@ -22,16 +23,17 @@ function getSession(phone: string) {
 }
 
 const client = new Client({
-  authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   },
 });
 
+let latestQR = "";
+
 client.on("qr", (qr: string) => {
-  console.log("\n📱 Scan this QR code with your WhatsApp:");
-  qrcode.generate(qr, { small: true });
+  latestQR = qr;
+  console.log("\n📱 Scan QR at: http://localhost:3457");
   console.log("  (WhatsApp → Settings → Linked Devices → Link a Device)\n");
 });
 
@@ -63,6 +65,21 @@ client.on("message", async (msg: Message) => {
     console.error("Chat error:", error);
     await msg.reply("Désolé, une erreur s'est produite. Veuillez réessayer.");
   }
+});
+
+// ── QR code web server ──────────────────────────
+http.createServer(async (_req, res) => {
+  if (!latestQR) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end("<h2 style='text-align:center;margin-top:40px;font-family:sans-serif'>Waiting for QR code...</h2><meta http-equiv='refresh' content='3'>");
+    return;
+  }
+  const dataUrl = await QRCode.toDataURL(latestQR, { width: 280, margin: 1 });
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WhatsApp QR</title><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f2f5;font-family:-apple-system,sans-serif}.card{background:#fff;border-radius:12px;padding:24px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1)}h2{font-size:16px;color:#075e54;margin-bottom:12px}img{border-radius:8px;max-width:280px}p{font-size:13px;color:#667781;margin-top:12px}</style></head><body><div class="card"><h2>Scan with WhatsApp</h2><img src="${dataUrl}" alt="QR Code"><p>WhatsApp → Settings → Linked Devices → Link a Device</p></div></body></html>`;
+  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  res.end(html);
+}).listen(3457, () => {
+  console.log("QR page: http://localhost:3457");
 });
 
 client.initialize();
