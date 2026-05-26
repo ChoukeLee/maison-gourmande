@@ -13,13 +13,19 @@ import { advanceStatus } from "../services/order-engine.js";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages/messages.js";
 import type { Order } from "../types/order.js";
 import { OrderStatus } from "../types/order.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ConversationMemory } from "../types/memory.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.resolve(__dirname, "../../public");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
-app.get("/staff", (_req, res) => { res.sendFile("staff.html", { root: "public" }); });
+app.use(express.static(publicDir));
+app.get("/staff", (_req, res) => { res.sendFile("staff.html", { root: publicDir }); });
 
 // ============================================================================
 // Session store (customer chat sessions)
