@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen — Maison Gourmande</title>
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --card: #fff;
+    --border: #e5e0d8;
+    --text: #2c2820;
+    --text-dim: #8c8478;
+    --green: #075e54;
+    --green-light: #e8f5e9;
+    --orange: #e65100;
+    --orange-light: #fff3e0;
+    --red: #c62828;
+    --red-light: #ffebee;
+    --blue: #1565c0;
+    --blue-light: #e3f2fd;
+    --gray: #757575;
+    --gray-light: #f5f5f5;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Roboto, "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  .topbar {
+    background: var(--green);
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .topbar .badge {
+    background: #fff;
+    color: var(--green);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .topbar .sub { font-size: 12px; opacity: 0.7; }
+
+  /* ── Layout ──────────────────────────────── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── Empty state ─────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-dim);
+  }
+  .empty .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
+  .empty p { font-size: 15px; }
+
+  /* ── Order card ──────────────────────────── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: slideIn 0.35s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .card.new { animation: popIn 0.5s ease; }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    50% { transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .card .card-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .card .card-header .order-id { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+  .card .card-header .time { font-size: 11px; color: var(--text-dim); }
+
+  .card .card-body { padding: 12px 16px; }
+  .card .card-body .item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .card .card-body .item .qty {
+    display: inline-block;
+    min-width: 22px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    background: #f0ede6;
+    border-radius: 10px;
+    padding: 0 6px;
+    margin-right: 8px;
+  }
+  .card .card-body .note {
+    font-size: 11px;
+    color: var(--orange);
+    font-style: italic;
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: var(--orange-light);
+    border-radius: 4px;
+  }
+
+  .card .card-footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card .card-footer .total { font-weight: 700; font-size: 15px; }
+  .card .card-footer .total small { font-weight: 400; font-size: 11px; color: var(--text-dim); }
+
+  /* Status badge */
+  .status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .status.confirmed  { background: var(--blue-light); color: var(--blue); }
+  .status.preparing  { background: var(--orange-light); color: var(--orange); }
+  .status.ready      { background: var(--green-light); color: var(--green); }
+  .status.completed  { background: var(--gray-light); color: var(--gray); }
+
+  /* Action buttons */
+  .actions { display: flex; gap: 6px; }
+  .actions button {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .actions button:active { transform: scale(0.95); }
+  .btn-start    { background: var(--orange); color: #fff; }
+  .btn-ready    { background: var(--green); color: #fff; }
+  .btn-complete { background: var(--gray); color: #fff; }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: var(--green);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 100;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+    pointer-events: none;
+  }
+  @keyframes toastIn  { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+
+  /* Sound toggle */
+  .sound-toggle {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-left: 12px;
+    opacity: 0.8;
+  }
+  .sound-toggle:hover { opacity: 1; }
+
+  /* Count badges */
+  .counts { display: flex; gap: 12px; font-size: 12px; opacity: 0.8; }
+  .counts span { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Maison Gourmande <span style="font-weight:400;">Kitchen</span></h1>
+    <div class="counts" id="counts"></div>
+  </div>
+  <div style="display:flex;align-items:center;">
+    <div class="badge" id="totalBadge">0 orders</div>
+    <button class="sound-toggle" id="soundBtn" onclick="toggleSound()">🔊 Sound ON</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="empty" id="emptyState">
+    <div class="icon">🍽️</div>
+    <p>Waiting for orders...</p>
+    <p style="font-size:12px;margin-top:4px;">New orders from the AI concierge will appear here in real-time.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  let soundEnabled = true;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function beep(freq, duration, type = 'sine') {
+    if (!soundEnabled) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = 0.12;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  function notifySound() {
+    beep(880, 0.12);
+    setTimeout(() => beep(1100, 0.18), 120);
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF';
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function statusLabel(s) {
+    return { confirmed: 'New', preparing: 'Preparing', ready: 'Ready', completed: 'Done', cancelled: 'Cancelled' }[s] || s;
+  }
+
+  function statusNext(s) {
+    if (s === 'confirmed') return 'preparing';
+    if (s === 'preparing') return 'ready';
+    if (s === 'ready') return 'completed';
+    return null;
+  }
+
+  function statusBtn(s) {
+    if (s === 'confirmed') return { text: 'Start Preparing', cls: 'btn-start' };
+    if (s === 'preparing') return { text: 'Mark Ready', cls: 'btn-ready' };
+    if (s === 'ready')     return { text: 'Complete', cls: 'btn-complete' };
+    return null;
+  }
+
+  let orders = [];
+
+  function render() {
+    document.getElementById('totalBadge').textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '');
+
+    const active = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+    const counts = document.getElementById('counts');
+    const confirmed = active.filter(o => o.status === 'confirmed').length;
+    const preparing = active.filter(o => o.status === 'preparing').length;
+    const ready = active.filter(o => o.status === 'ready').length;
+    counts.innerHTML = '';
+    if (confirmed) counts.innerHTML += '<span>🆕 ' + confirmed + ' new</span>';
+    if (preparing) counts.innerHTML += '<span>🔥 ' + preparing + ' preparing</span>';
+    if (ready) counts.innerHTML += '<span>✅ ' + ready + ' ready</span>';
+
+    const empty = document.getElementById('emptyState');
+    const grid = document.getElementById('grid');
+    empty.style.display = active.length === 0 ? 'block' : 'none';
+
+    // Sort: confirmed first, then preparing, then ready, then completed
+    const sorted = [...orders].sort((a, b) => {
+      const rank = { confirmed: 0, preparing: 1, ready: 2, completed: 3, cancelled: 4 };
+      return (rank[a.status] ?? 5) - (rank[b.status] ?? 5);
+    });
+
+    grid.innerHTML = sorted.map(o => {
+      const next = statusNext(o.status);
+      const btn = statusBtn(o.status);
+      const items = o.items.map(i => {
+        const name = i.nameZh ? i.name + ' (' + i.nameZh + ')' : i.name;
+        const opt = i.option ? ' · ' + i.option : '';
+        const note = i.note ? ' <span style="font-size:10px;color:#e65100;">📝 ' + i.note + '</span>' : '';
+        return '<div class="item"><span><span class="qty">' + i.quantity + '</span>' + name + opt + note + '</span><span>' + i.subtotal.toLocaleString() + '</span></div>';
+      }).join('');
+
+      return `
+        <div class="card" id="card-${o.id}">
+          <div class="card-header">
+            <span class="order-id">#${o.id}</span>
+            <span class="time">${formatTime(o.createdAt)}</span>
+          </div>
+          <div class="card-body">
+            ${items}
+            ${o.note ? '<div class="note">📝 ' + o.note + '</div>' : ''}
+          </div>
+          <div class="card-footer">
+            <div>
+              <span class="status ${o.status}">${statusLabel(o.status)}</span>
+              <span class="total" style="margin-left:10px;">${o.total.toLocaleString()} <small>FCFA</small></span>
+            </div>
+            ${btn ? '<div class="actions"><button class="' + btn.cls + '" onclick="advance(\'' + o.id + '\')">' + btn.text + '</button></div>' : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function advance(id) {
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+    const next = statusNext(order.status);
+    if (!next) return;
+
+    try {
+      await fetch('/api/orders/' + id + '/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      });
+    } catch (e) {
+      console.error('Status update failed:', e);
+    }
+  }
+
+  // ── SSE ────────────────────────────────────
+  function connectSSE() {
+    const es = new EventSource('/api/orders/stream');
+
+    es.addEventListener('init', function(e) {
+      orders = JSON.parse(e.data);
+      render();
+    });
+
+    es.addEventListener('new_order', function(e) {
+      const order = JSON.parse(e.data);
+      // Replace if exists, add if new
+      const idx = orders.findIndex(o => o.id === order.id);
+      if (idx >= 0) orders[idx] = order;
+      else orders.unshift(order);
+
+      // Flash the new card
+      render();
+      const card = document.getElementById('card-' + order.id);
+      if (card && idx < 0) {
+        card.classList.add('new');
+        setTimeout(() => card.classList.remove('new'), 500);
+      }
+
+      if (idx < 0) {
+        showToast('🔔 New order #' + order.id + '!');
+        notifySound();
+      }
+    });
+
+    es.addEventListener('order_updated', function(e) {
+      const order = JSON.parse(e.data);
+      const idx = orders.findIndex(o => o.id === order.id);
+      if (idx >= 0) orders[idx] = order;
+      render();
+    });
+
+    es.onerror = function() {
+      // Reconnect after 2 seconds
+      setTimeout(connectSSE, 2000);
+    };
+  }
+
+  connectSSE();
+</script>
+</body>
+</html>

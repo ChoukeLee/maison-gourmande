@@ -1,0 +1,27 @@
+{
+  "name": "mg-menu",
+  "version": "1.0.0",
+  "description": "Maison Gourmande Conversational Restaurant OS — AI agent, menu database, and order engine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "chat": "tsx src/cli/chat.ts",
+    "serve": "tsx src/server/index.ts",
+    "generate-menu": "tsx scripts/build-menu.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.0",
+    "localtunnel": "^2.0.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
