@@ -360,6 +360,10 @@
   }
 
   function formatText(text) {
+    // Handle menu images: [MENU_IMAGE:url] → <img>
+    text = text.replace(/\[MENU_IMAGE:(.+?)\]/g, (_, url) => {
+      return '<div style="margin-top:8px"><img src="' + url + '" style="max-width:100%;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)" onerror="this.style.display=\'none\'"></div>';
+    });
     // Convert newlines to <br>, escape HTML, handle markdown-like **bold**
     let escaped = text
       .replace(/&/g, '&amp;')

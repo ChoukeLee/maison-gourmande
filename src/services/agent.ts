@@ -183,6 +183,23 @@ function dispatchTool(name: string, args: Record<string, unknown>, order: Order)
       };
     }
 
+    case "get_menu_image": {
+      const category = (args["category"] as string) ?? "";
+      const url = category
+        ? `/api/menu-image.svg?category=${encodeURIComponent(category)}`
+        : "/api/menu-image.svg?recommended=true";
+      const label = category ? category : "Today's Recommendations";
+      return {
+        result: `Here's the ${label} menu:\n[MENU_IMAGE:${url}]`,
+        order,
+        memoryUpdate: {
+          lastAction: `Sent menu image for ${label}`,
+          lastShownType: "search",
+          lastShownQuery: label,
+        },
+      };
+    }
+
     case "get_menu_categories": {
       const cats = getCategories();
       const formatted = cats

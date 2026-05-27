@@ -88,10 +88,27 @@ export const menuTools: MenuTool[] = [
     },
   },
   {
+    name: "get_menu_image",
+    description:
+      "Generate a beautiful visual menu image (SVG) that the customer can see. " +
+      "Use ONLY when the customer explicitly asks to SEE the menu, e.g. 'show me the menu', " +
+      "'发菜单图片', 'send me the menu', '我看一下菜单', 'je veux voir la carte'. " +
+      "Do NOT use for normal searches or food questions — only for visual menu browsing.",
+    input_schema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "Optional: which category to show. E.g. 'pizzas', 'salades', 'hamburgers'. Leave empty for full recommendations.",
+        },
+      },
+    },
+  },
+  {
     name: "get_menu_categories",
     description:
       "List all available menu categories with their item counts. " +
-      "Use when a customer asks 'what do you have?' or 'show me the menu' to give an overview.",
+      "Use when a customer asks 'what categories do you have?' or wants to browse what's available.",
     input_schema: {
       type: "object",
       properties: {},
