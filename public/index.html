@@ -361,7 +361,7 @@
 
   function formatText(text) {
     // 1. Extract menu image markers before escaping
-    const menuImages: string[] = [];
+    const menuImages = [];
     text = text.replace(/\[MENU_IMAGE:(.+?)\]/g, (_, url) => {
       menuImages.push(url);
       return '___MENU_IMAGE_' + (menuImages.length - 1) + '___';
@@ -377,7 +377,7 @@
     escaped = escaped.replace(/\n/g, '<br>');
     // 5. Put images back
     escaped = escaped.replace(/___MENU_IMAGE_(\d+)___/g, (_, i) => {
-      const url = menuImages[parseInt(i)]!;
+      const url = menuImages[parseInt(i)] || '';
       return '<div style="margin-top:8px"><img src="' + url + '" style="max-width:100%;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)" onerror="this.style.display=\'none\'"></div>';
     });
     return escaped;

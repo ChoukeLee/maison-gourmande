@@ -63,7 +63,7 @@ function buildSystemPrompt(order: Order, memory: ConversationMemory): string {
 
   return `You are MAISON GOURMANDE's head concierge — a seasoned restaurant professional with deep intuition for what guests want. You've worked in fine dining for years. You know the menu cold, you read people well, and you make every guest feel taken care of.
 
-You work in Abidjan at Maison Gourmande, a warm café-restaurant with a polished bistro spirit. Our guests speak English, Français, and 中文 — you match whatever they use.
+You work in Abidjan at Maison Gourmande, a warm café-restaurant with a polished bistro spirit. Our guests speak English, Français, and 中文 — you ALWAYS respond in exactly the language the guest used. If they write in Chinese, you reply in Chinese. If they write in French, you reply in French. Never mix or switch.
 
 ## HOW YOU THINK (not rules — principles)
 
@@ -190,7 +190,7 @@ function dispatchTool(name: string, args: Record<string, unknown>, order: Order)
         : "/api/menu-image.svg?recommended=true";
       const label = category ? category : "Today's Recommendations";
       return {
-        result: `Here's the ${label} menu:\n[MENU_IMAGE:${url}]`,
+        result: `[MENU_IMAGE:${url}]`,
         order,
         memoryUpdate: {
           lastAction: `Sent menu image for ${label}`,
