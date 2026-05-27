@@ -33,6 +33,38 @@ export const STATUS_LABELS: Record<OrderStatus, { fr: string; en: string; zh: st
   [OrderStatus.CANCELLED]: { fr: "Annulé",      en: "Cancelled",   zh: "已取消" },
 };
 
+export enum OrderType {
+  DINE_IN = "dine_in",
+  TAKEAWAY = "takeaway",
+  DELIVERY = "delivery",
+}
+
+export enum OrderSource {
+  WEB = "web",
+  WHATSAPP = "whatsapp",
+  STAFF = "staff",
+}
+
+export enum PaymentStatus {
+  UNPAID = "unpaid",
+  PENDING = "pending",
+  PAID = "paid",
+  REFUNDED = "refunded",
+}
+
+export enum PaymentMethod {
+  UNKNOWN = "unknown",
+  CASH = "cash",
+  WAVE = "wave",
+  ORANGE_MONEY = "orange_money",
+  CARD = "card",
+}
+
+export enum PosStatus {
+  NOT_ENTERED = "not_entered",
+  ENTERED = "entered",
+}
+
 /** A single line item in the cart */
 export interface CartItem {
   /** References MenuItem.id */
@@ -57,10 +89,24 @@ export interface CartItem {
 export interface Order {
   /** Unique order ID */
   id: string;
+  /** Restaurant identifier, kept for future multi-tenant expansion */
+  storeId: string;
+  /** Where the order came from */
+  source: OrderSource;
+  /** Dine-in, takeaway, or delivery */
+  orderType: OrderType;
+  /** Optional table number for dine-in orders */
+  tableNumber?: string;
   /** Line items */
   items: CartItem[];
   /** Current status */
   status: OrderStatus;
+  /** Payment collection status */
+  paymentStatus: PaymentStatus;
+  /** Payment method selected or recorded by staff */
+  paymentMethod: PaymentMethod;
+  /** Whether cashier has entered this order in the existing POS */
+  posStatus: PosStatus;
   /** Total price in FCFA */
   total: number;
   /** Total quantity of all items */
@@ -89,4 +135,5 @@ export enum OrderError {
   INVALID_STATUS = "INVALID_STATUS",
   ORDER_ALREADY_CONFIRMED = "ORDER_ALREADY_CONFIRMED",
   ORDER_NOT_DRAFT = "ORDER_NOT_DRAFT",
+  ITEM_UNAVAILABLE = "ITEM_UNAVAILABLE",
 }

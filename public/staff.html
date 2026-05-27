@@ -3,421 +3,1385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kitchen — Maison Gourmande</title>
+<title>Maison Gourmande Control Center</title>
 <style>
   :root {
-    --bg: #f5f3ef;
-    --card: #fff;
-    --border: #e5e0d8;
-    --text: #2c2820;
-    --text-dim: #8c8478;
-    --green: #075e54;
-    --green-light: #e8f5e9;
-    --orange: #e65100;
-    --orange-light: #fff3e0;
-    --red: #c62828;
-    --red-light: #ffebee;
-    --blue: #1565c0;
-    --blue-light: #e3f2fd;
-    --gray: #757575;
-    --gray-light: #f5f5f5;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
-    --radius: 10px;
+    --paper: #f7f1e6;
+    --paper-deep: #efe4d3;
+    --ink: #26231d;
+    --muted: #817767;
+    --line: #dfd1bc;
+    --card: #fffaf2;
+    --green: #123d35;
+    --green-soft: #e5eee7;
+    --gold: #b7904b;
+    --gold-soft: #f4ead7;
+    --red: #ad3b2f;
+    --red-soft: #f8e6e2;
+    --blue: #355c7d;
+    --blue-soft: #e8eef5;
+    --shadow: 0 18px 44px rgba(61, 48, 30, 0.08);
+    --radius: 8px;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Roboto, "Noto Sans SC", sans-serif;
-    background: var(--bg);
-    color: var(--text);
     min-height: 100vh;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,0.36), transparent 38%),
+      var(--paper);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Header ─────────────────────────────── */
-  .topbar {
-    background: var(--green);
-    color: #fff;
-    padding: 14px 24px;
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 244px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 24px 18px;
+    background: rgba(255, 250, 242, 0.72);
+    border-right: 1px solid var(--line);
+    backdrop-filter: blur(18px);
+  }
+
+  .brand {
+    padding: 8px 10px 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+
+  .mark {
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--green);
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .brand h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    line-height: 1.06;
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+
+  .brand p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .nav {
+    display: grid;
+    gap: 6px;
+  }
+
+  .nav button {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    text-align: left;
   }
-  .topbar h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-  .topbar .badge {
-    background: #fff;
-    color: var(--green);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .topbar .sub { font-size: 12px; opacity: 0.7; }
 
-  /* ── Layout ──────────────────────────────── */
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px 24px;
+  .nav button.active {
+    background: var(--green);
+    color: #fff;
   }
-  .grid {
+
+  .nav .count {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 999px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    place-items: center;
+    font-size: 11px;
+    background: rgba(18, 61, 53, 0.1);
+    color: inherit;
   }
 
-  /* ── Empty state ─────────────────────────── */
-  .empty {
-    text-align: center;
-    padding: 80px 24px;
-    color: var(--text-dim);
+  .sidebar-foot {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 20px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.36);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
   }
-  .empty .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
-  .empty p { font-size: 15px; }
 
-  /* ── Order card ──────────────────────────── */
-  .card {
-    background: var(--card);
+  .main {
+    padding: 24px clamp(18px, 4vw, 44px) 36px;
+    min-width: 0;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow {
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .topbar h2 {
+    margin-top: 6px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .topbar p {
+    color: var(--muted);
+    margin-top: 8px;
+    max-width: 680px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .pill, .ghost-btn, .primary-btn, .danger-btn {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    min-height: 36px;
+    padding: 8px 14px;
+    background: rgba(255, 250, 242, 0.76);
+    color: var(--ink);
+    font-size: 13px;
+  }
+
+  .primary-btn {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+  }
+
+  .danger-btn {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+
+  .ghost-btn:hover, .primary-btn:hover, .danger-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .metric {
+    background: rgba(255, 250, 242, 0.86);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .metric span {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .metric strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 24px;
+    letter-spacing: 0;
+  }
+
+  .panel {
+    display: none;
+  }
+
+  .panel.active {
+    display: block;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 18px;
+  }
+
+  .surface {
+    background: rgba(255, 250, 242, 0.9);
+    border: 1px solid var(--line);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow: hidden;
-    animation: slideIn 0.35s ease;
-    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-  .card.new { animation: popIn 0.5s ease; }
 
-  @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes popIn {
-    0% { opacity: 0; transform: scale(0.9); }
-    50% { transform: scale(1.02); }
+  .surface-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .surface-head h3 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .surface-head p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(286px, 1fr));
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .order-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fffdf8;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+
+  .order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(61, 48, 30, 0.1);
+  }
+
+  .order-card.new {
+    animation: pop 0.45s ease;
+  }
+
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(0.96); }
+    70% { transform: scale(1.015); }
     100% { opacity: 1; transform: scale(1); }
   }
 
-  .card .card-header {
-    padding: 12px 16px;
+  .order-card header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
   }
-  .card .card-header .order-id { font-size: 12px; color: var(--text-dim); font-weight: 500; }
-  .card .card-header .time { font-size: 11px; color: var(--text-dim); }
 
-  .card .card-body { padding: 12px 16px; }
-  .card .card-body .item {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  .card .card-body .item .qty {
-    display: inline-block;
-    min-width: 22px;
-    text-align: center;
-    font-weight: 600;
+  .order-id {
     font-size: 12px;
-    background: #f0ede6;
-    border-radius: 10px;
-    padding: 0 6px;
-    margin-right: 8px;
-  }
-  .card .card-body .note {
-    font-size: 11px;
-    color: var(--orange);
-    font-style: italic;
-    margin-top: 6px;
-    padding: 4px 8px;
-    background: var(--orange-light);
-    border-radius: 4px;
+    color: var(--muted);
   }
 
-  .card .card-footer {
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
+  .order-time {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .order-meta {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
   }
-  .card .card-footer .total { font-weight: 700; font-size: 15px; }
-  .card .card-footer .total small { font-weight: 400; font-size: 11px; color: var(--text-dim); }
 
-  /* Status badge */
-  .status {
-    display: inline-block;
-    font-size: 10px;
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    padding: 3px 10px;
-    border-radius: 12px;
+    letter-spacing: 0.06em;
   }
-  .status.confirmed  { background: var(--blue-light); color: var(--blue); }
-  .status.preparing  { background: var(--orange-light); color: var(--orange); }
-  .status.ready      { background: var(--green-light); color: var(--green); }
-  .status.completed  { background: var(--gray-light); color: var(--gray); }
 
-  /* Action buttons */
-  .actions { display: flex; gap: 6px; }
-  .actions button {
+  .status.confirmed { background: var(--blue-soft); color: var(--blue); }
+  .status.preparing { background: var(--gold-soft); color: #8a6427; }
+  .status.ready { background: var(--green-soft); color: var(--green); }
+  .status.completed { background: #ece7de; color: var(--muted); }
+  .status.cancelled { background: var(--red-soft); color: var(--red); }
+  .paid { background: var(--green-soft); color: var(--green); }
+  .pending { background: var(--gold-soft); color: #8a6427; }
+  .entered { background: var(--blue-soft); color: var(--blue); }
+
+  .order-card .body {
+    padding: 12px 14px;
+  }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+  }
+
+  .qty {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 7px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background: var(--paper-deep);
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  .note {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--gold-soft);
+    color: #75552b;
+    font-size: 12px;
+  }
+
+  .order-card footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .total {
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+  }
+
+  th, td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--muted);
     font-size: 11px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 16px;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.08em;
+    background: rgba(239, 228, 211, 0.38);
   }
-  .actions button:active { transform: scale(0.95); }
-  .btn-start    { background: var(--orange); color: #fff; }
-  .btn-ready    { background: var(--green); color: #fff; }
-  .btn-complete { background: var(--gray); color: #fff; }
 
-  /* Notification toast */
-  .toast {
-    position: fixed;
-    top: 70px;
-    right: 20px;
+  .empty {
+    padding: 52px 18px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty strong {
+    display: block;
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .insight-list {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .insight {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: rgba(239, 228, 211, 0.38);
+  }
+
+  .insight span {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .menu-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .menu-tile {
+    min-height: 144px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(145deg, rgba(183,144,75,0.14), transparent 54%),
+      #fffdf8;
+  }
+
+  .menu-tile h4 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .menu-tile p {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .menu-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(239, 228, 211, 0.26);
+  }
+
+  .menu-tools input,
+  .menu-tools select,
+  .price-input {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 9px 12px;
+    background: #fffdf8;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .menu-tools input {
+    min-width: min(320px, 100%);
+    flex: 1;
+  }
+
+  .menu-list {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .menu-row {
+    display: grid;
+    grid-template-columns: minmax(210px, 1fr) 130px auto;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fffdf8;
+    padding: 12px;
+  }
+
+  .menu-row h4 {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .menu-row p {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .menu-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .toggle-btn.active {
     background: var(--green);
     color: #fff;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    z-index: 100;
-    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
-    pointer-events: none;
+    border-color: var(--green);
   }
-  @keyframes toastIn  { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
 
-  /* Sound toggle */
-  .sound-toggle {
-    background: none;
-    border: 1px solid rgba(255,255,255,0.3);
+  .toggle-btn.warn.active {
+    background: var(--red);
     color: #fff;
-    border-radius: 16px;
-    padding: 4px 12px;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: inherit;
-    margin-left: 12px;
-    opacity: 0.8;
+    border-color: var(--red);
   }
-  .sound-toggle:hover { opacity: 1; }
 
-  /* Count badges */
-  .counts { display: flex; gap: 12px; font-size: 12px; opacity: 0.8; }
-  .counts span { white-space: nowrap; }
+  .assistant-layout {
+    display: grid;
+    grid-template-rows: minmax(360px, 1fr) auto;
+    min-height: 560px;
+  }
+
+  .assistant-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    overflow: auto;
+  }
+
+  .assistant-msg {
+    max-width: min(720px, 86%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .assistant-msg.bot {
+    align-self: flex-start;
+    background: #fffdf8;
+  }
+
+  .assistant-msg.user {
+    align-self: flex-end;
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+
+  .assistant-compose {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border-top: 1px solid var(--line);
+    background: rgba(239, 228, 211, 0.26);
+  }
+
+  .assistant-compose input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: #fffdf8;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .prompt-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 14px 14px;
+  }
+
+  .toast {
+    position: fixed;
+    right: 22px;
+    top: 22px;
+    z-index: 50;
+    padding: 12px 16px;
+    background: var(--green);
+    color: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 16px 38px rgba(18,61,53,0.2);
+    animation: toast-in 0.2s ease, toast-out 0.3s ease 2.7s forwards;
+  }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+  }
+
+  @media (max-width: 980px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar {
+      position: relative;
+      height: auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .sidebar-foot { position: static; margin-top: 18px; }
+    .nav { grid-template-columns: repeat(3, 1fr); }
+    .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .section-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .main { padding: 18px 12px 28px; }
+    .topbar { display: block; }
+    .toolbar { justify-content: flex-start; margin-top: 14px; }
+    .nav { grid-template-columns: 1fr 1fr; }
+    .metrics { grid-template-columns: 1fr; }
+    .order-grid { grid-template-columns: 1fr; padding: 12px; }
+  }
 </style>
 </head>
 <body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">MG</div>
+      <h1>Maison<br>Gourmande</h1>
+      <p>Restaurant control center</p>
+    </div>
 
-<div class="topbar">
-  <div>
-    <h1>Maison Gourmande <span style="font-weight:400;">Kitchen</span></h1>
-    <div class="counts" id="counts"></div>
-  </div>
-  <div style="display:flex;align-items:center;">
-    <div class="badge" id="totalBadge">0 orders</div>
-    <button class="sound-toggle" id="soundBtn" onclick="toggleSound()">🔊 Sound ON</button>
-  </div>
-</div>
+    <nav class="nav" aria-label="Admin sections">
+      <button class="active" data-panel="overview">Overview <span class="count" id="navOverview">0</span></button>
+      <button data-panel="orders">Orders <span class="count" id="navOrders">0</span></button>
+      <button data-panel="kitchen">Kitchen <span class="count" id="navKitchen">0</span></button>
+      <button data-panel="cashier">Cashier <span class="count" id="navCashier">0</span></button>
+      <button data-panel="analytics">Analytics <span class="count" id="navAnalytics">0</span></button>
+      <button data-panel="assistant">Assistant <span class="count">AI</span></button>
+      <button data-panel="menu">Menu <span class="count" id="navMenu">0</span></button>
+    </nav>
 
-<div class="container">
-  <div class="empty" id="emptyState">
-    <div class="icon">🍽️</div>
-    <p>Waiting for orders...</p>
-    <p style="font-size:12px;margin-top:4px;">New orders from the AI concierge will appear here in real-time.</p>
-  </div>
-  <div class="grid" id="grid"></div>
+    <div class="sidebar-foot">
+      Orders are live from the AI concierge. Cashier and POS marks are now shared through the server for every staff screen.
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow" id="sectionEyebrow">Live service</div>
+        <h2 id="sectionTitle">Overview</h2>
+        <p id="sectionCopy">A warm command center for orders, kitchen flow, cashier follow-up, and daily sales.</p>
+      </div>
+      <div class="toolbar">
+        <span class="pill" id="clock">--:--</span>
+        <button class="ghost-btn" id="soundBtn" type="button">Sound On</button>
+      </div>
+    </div>
+
+    <section class="metrics" aria-label="Today metrics">
+      <div class="metric"><span>Today's sales</span><strong id="metricSales">0 FCFA</strong></div>
+      <div class="metric"><span>Orders</span><strong id="metricOrders">0</strong></div>
+      <div class="metric"><span>Average ticket</span><strong id="metricAverage">0 FCFA</strong></div>
+      <div class="metric"><span>Needs cashier</span><strong id="metricCashier">0</strong></div>
+    </section>
+
+    <section class="panel active" id="panel-overview">
+      <div class="section-grid">
+        <div class="surface">
+          <div class="surface-head">
+            <div>
+              <h3>Active Orders</h3>
+              <p>New, preparing, and ready orders from chat and WhatsApp.</p>
+            </div>
+            <span class="badge status confirmed" id="activeBadge">0 active</span>
+          </div>
+          <div class="order-grid" id="overviewGrid"></div>
+        </div>
+        <div class="surface">
+          <div class="surface-head">
+            <div>
+              <h3>Service Pulse</h3>
+              <p>Quick operational read for the current shift.</p>
+            </div>
+          </div>
+          <div class="insight-list" id="pulseList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-orders">
+      <div class="surface">
+        <div class="surface-head">
+          <div>
+            <h3>All Orders</h3>
+            <p>Full order history currently held by the running server.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Order</th><th>Service</th><th>Items</th><th>Status</th><th>Payment</th><th>POS</th><th>Total</th><th>Time</th></tr>
+            </thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-kitchen">
+      <div class="surface">
+        <div class="surface-head">
+          <div>
+            <h3>Kitchen Queue</h3>
+            <p>Move orders from new to preparing, ready, and completed.</p>
+          </div>
+        </div>
+        <div class="order-grid" id="kitchenGrid"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-cashier">
+      <div class="surface">
+        <div class="surface-head">
+          <div>
+            <h3>Cashier Desk</h3>
+            <p>Track payment and whether the order has been entered into the current POS.</p>
+          </div>
+        </div>
+        <div class="order-grid" id="cashierGrid"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-analytics">
+      <div class="section-grid">
+        <div class="surface">
+          <div class="surface-head">
+            <div>
+              <h3>Top Items</h3>
+              <p>Best sellers from confirmed and completed orders.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Item</th><th>Quantity</th><th>Sales</th></tr></thead>
+              <tbody id="topItemsTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="surface">
+          <div class="surface-head">
+            <div>
+              <h3>Reconciliation</h3>
+              <p>Compare AI orders with cashier/POS progress.</p>
+            </div>
+          </div>
+          <div class="insight-list" id="reconcileList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-assistant">
+      <div class="surface assistant-layout">
+        <div>
+          <div class="surface-head">
+            <div>
+              <h3>Admin Assistant</h3>
+              <p>Ask operational questions in plain language. Changes will require review before saving.</p>
+            </div>
+            <span class="badge pending">Safe mode</span>
+          </div>
+          <div class="assistant-chat" id="assistantChat">
+            <div class="assistant-msg bot">Bonjour. I can help with sales, unpaid orders, POS entry, kitchen queue, and top items. Menu changes will be added with review before save.</div>
+          </div>
+          <div class="prompt-chips">
+            <button class="ghost-btn" type="button" onclick="askAssistant('What are today\\'s sales?')">Today's sales</button>
+            <button class="ghost-btn" type="button" onclick="askAssistant('Which orders are unpaid?')">Unpaid orders</button>
+            <button class="ghost-btn" type="button" onclick="askAssistant('Which orders need POS entry?')">POS gaps</button>
+            <button class="ghost-btn" type="button" onclick="askAssistant('What are the top items today?')">Top items</button>
+          </div>
+        </div>
+        <form class="assistant-compose" id="assistantForm">
+          <input id="assistantInput" autocomplete="off" placeholder="Ask about sales, orders, POS, kitchen..." />
+          <button class="primary-btn" type="submit">Ask</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-menu">
+      <div class="surface">
+        <div class="surface-head">
+          <div>
+            <h3>Menu Manager</h3>
+            <p>Edit daily availability, recommended items, and temporary price overrides.</p>
+          </div>
+          <span class="badge pending">Overrides MVP</span>
+        </div>
+        <div class="menu-tools">
+          <input id="menuSearch" placeholder="Search menu items..." />
+          <select id="menuCategoryFilter">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div class="menu-list" id="menuList"></div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <script>
-  let soundEnabled = true;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  function beep(freq, duration, type = 'sine') {
-    if (!soundEnabled) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.value = 0.12;
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.stop(audioCtx.currentTime + duration);
-  }
-
-  function notifySound() {
-    beep(880, 0.12);
-    setTimeout(() => beep(1100, 0.18), 120);
-  }
-
-  function toggleSound() {
-    soundEnabled = !soundEnabled;
-    document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF';
-  }
-
-  function showToast(msg) {
-    const t = document.createElement('div');
-    t.className = 'toast';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-  }
-
-  function formatTime(ts) {
-    const d = new Date(ts);
-    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function statusLabel(s) {
-    return { confirmed: 'New', preparing: 'Preparing', ready: 'Ready', completed: 'Done', cancelled: 'Cancelled' }[s] || s;
-  }
-
-  function statusNext(s) {
-    if (s === 'confirmed') return 'preparing';
-    if (s === 'preparing') return 'ready';
-    if (s === 'ready') return 'completed';
-    return null;
-  }
-
-  function statusBtn(s) {
-    if (s === 'confirmed') return { text: 'Start Preparing', cls: 'btn-start' };
-    if (s === 'preparing') return { text: 'Mark Ready', cls: 'btn-ready' };
-    if (s === 'ready')     return { text: 'Complete', cls: 'btn-complete' };
-    return null;
-  }
+  const panels = {
+    overview: {
+      eyebrow: 'Live service',
+      title: 'Overview',
+      copy: 'A warm command center for orders, kitchen flow, cashier follow-up, and daily sales.',
+    },
+    orders: {
+      eyebrow: 'Order history',
+      title: 'Orders',
+      copy: 'Scan every AI-confirmed order, its contents, payment state, and POS entry state.',
+    },
+    kitchen: {
+      eyebrow: 'Kitchen queue',
+      title: 'Kitchen',
+      copy: 'A focused production view for confirmed, preparing, and ready orders.',
+    },
+    cashier: {
+      eyebrow: 'Cashier desk',
+      title: 'Cashier',
+      copy: 'Help the cashier collect payment and manually mirror the order into the existing POS.',
+    },
+    analytics: {
+      eyebrow: 'Sales pulse',
+      title: 'Analytics',
+      copy: 'A lightweight sales view for today, top dishes, and reconciliation gaps.',
+    },
+    assistant: {
+      eyebrow: 'Guided operations',
+      title: 'Assistant',
+      copy: 'A safe conversational layer for staff who prefer asking instead of navigating.',
+    },
+    menu: {
+      eyebrow: 'Menu studio',
+      title: 'Menu',
+      copy: 'The design direction for editable menus and generated WhatsApp or TV menu boards.',
+    },
+  };
 
   let orders = [];
+  let menuItems = [];
+  let soundEnabled = true;
+  let audioCtx = null;
 
-  function render() {
-    document.getElementById('totalBadge').textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '');
+  document.querySelectorAll('.nav button').forEach((button) => {
+    button.addEventListener('click', () => showPanel(button.dataset.panel));
+  });
 
-    const active = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
-    const counts = document.getElementById('counts');
-    const confirmed = active.filter(o => o.status === 'confirmed').length;
-    const preparing = active.filter(o => o.status === 'preparing').length;
-    const ready = active.filter(o => o.status === 'ready').length;
-    counts.innerHTML = '';
-    if (confirmed) counts.innerHTML += '<span>🆕 ' + confirmed + ' new</span>';
-    if (preparing) counts.innerHTML += '<span>🔥 ' + preparing + ' preparing</span>';
-    if (ready) counts.innerHTML += '<span>✅ ' + ready + ' ready</span>';
+  document.getElementById('soundBtn').addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundBtn').textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+  });
 
-    const empty = document.getElementById('emptyState');
-    const grid = document.getElementById('grid');
-    empty.style.display = active.length === 0 ? 'block' : 'none';
+  document.getElementById('assistantForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = document.getElementById('assistantInput');
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = '';
+    askAssistant(message);
+  });
 
-    // Sort: confirmed first, then preparing, then ready, then completed
-    const sorted = [...orders].sort((a, b) => {
-      const rank = { confirmed: 0, preparing: 1, ready: 2, completed: 3, cancelled: 4 };
-      return (rank[a.status] ?? 5) - (rank[b.status] ?? 5);
+  document.getElementById('menuSearch').addEventListener('input', renderMenu);
+  document.getElementById('menuCategoryFilter').addEventListener('change', renderMenu);
+
+  function showPanel(id) {
+    document.querySelectorAll('.nav button').forEach((button) => {
+      button.classList.toggle('active', button.dataset.panel === id);
     });
-
-    grid.innerHTML = sorted.map(o => {
-      const next = statusNext(o.status);
-      const btn = statusBtn(o.status);
-      const items = o.items.map(i => {
-        const name = i.nameZh ? i.name + ' (' + i.nameZh + ')' : i.name;
-        const opt = i.option ? ' · ' + i.option : '';
-        const note = i.note ? ' <span style="font-size:10px;color:#e65100;">📝 ' + i.note + '</span>' : '';
-        return '<div class="item"><span><span class="qty">' + i.quantity + '</span>' + name + opt + note + '</span><span>' + i.subtotal.toLocaleString() + '</span></div>';
-      }).join('');
-
-      return `
-        <div class="card" id="card-${o.id}">
-          <div class="card-header">
-            <span class="order-id">#${o.id}</span>
-            <span class="time">${formatTime(o.createdAt)}</span>
-          </div>
-          <div class="card-body">
-            ${items}
-            ${o.note ? '<div class="note">📝 ' + o.note + '</div>' : ''}
-          </div>
-          <div class="card-footer">
-            <div>
-              <span class="status ${o.status}">${statusLabel(o.status)}</span>
-              <span class="total" style="margin-left:10px;">${o.total.toLocaleString()} <small>FCFA</small></span>
-            </div>
-            ${btn ? '<div class="actions"><button class="' + btn.cls + '" onclick="advance(\'' + o.id + '\')">' + btn.text + '</button></div>' : ''}
-          </div>
-        </div>`;
-    }).join('');
+    document.querySelectorAll('.panel').forEach((panel) => {
+      panel.classList.toggle('active', panel.id === 'panel-' + id);
+    });
+    document.getElementById('sectionEyebrow').textContent = panels[id].eyebrow;
+    document.getElementById('sectionTitle').textContent = panels[id].title;
+    document.getElementById('sectionCopy').textContent = panels[id].copy;
   }
 
-  async function advance(id) {
-    const order = orders.find(o => o.id === id);
-    if (!order) return;
-    const next = statusNext(order.status);
-    if (!next) return;
-
+  async function askAssistant(message) {
+    addAssistantMessage('user', message);
+    const pending = addAssistantMessage('bot', 'Thinking...');
     try {
-      await fetch('/api/orders/' + id + '/status', {
-        method: 'PATCH',
+      const response = await fetch('/api/admin/assistant', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: next }),
+        body: JSON.stringify({ message }),
       });
-    } catch (e) {
-      console.error('Status update failed:', e);
+      const data = await response.json();
+      pending.textContent = data.reply || data.error || 'I could not answer that yet.';
+    } catch {
+      pending.textContent = 'Connection lost. Please try again.';
     }
   }
 
-  // ── SSE ────────────────────────────────────
+  function addAssistantMessage(role, text) {
+    const chat = document.getElementById('assistantChat');
+    const bubble = document.createElement('div');
+    bubble.className = 'assistant-msg ' + role;
+    bubble.textContent = text;
+    chat.appendChild(bubble);
+    chat.scrollTop = chat.scrollHeight;
+    return bubble;
+  }
+
+  function getMarks(id) {
+    const order = orders.find((o) => o.id === id);
+    return {
+      payment: order?.paymentStatus || 'unpaid',
+      method: order?.paymentMethod || 'unknown',
+      pos: order?.posStatus || 'not_entered',
+    };
+  }
+
+  async function setPayment(id, paymentStatus) {
+    await updateCashier(id, { paymentStatus });
+  }
+
+  async function setPos(id, posStatus) {
+    await updateCashier(id, { posStatus });
+  }
+
+  async function updateCashier(id, patch) {
+    const response = await fetch('/api/orders/' + encodeURIComponent(id) + '/cashier', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!response.ok) {
+      showToast('Cashier update failed');
+      return;
+    }
+    const updated = await response.json();
+    const idx = orders.findIndex((order) => order.id === updated.id);
+    if (idx >= 0) orders[idx] = updated;
+    render();
+  }
+
+  function formatMoney(value) {
+    return Number(value || 0).toLocaleString('fr-FR') + ' FCFA';
+  }
+
+  function formatTime(ts) {
+    return new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function statusLabel(status) {
+    return {
+      confirmed: 'New',
+      preparing: 'Preparing',
+      ready: 'Ready',
+      completed: 'Done',
+      cancelled: 'Cancelled',
+    }[status] || status;
+  }
+
+  function orderTypeLabel(type) {
+    return {
+      dine_in: 'Dine-in',
+      takeaway: 'Takeaway',
+      delivery: 'Delivery',
+    }[type] || 'Dine-in';
+  }
+
+  function sourceLabel(source) {
+    return {
+      web: 'Web QR',
+      whatsapp: 'WhatsApp',
+      staff: 'Staff',
+    }[source] || 'Web QR';
+  }
+
+  function serviceLabel(order) {
+    const table = order.tableNumber ? 'Table ' + escapeHtml(order.tableNumber) : 'No table';
+    return table + ' · ' + orderTypeLabel(order.orderType) + ' · ' + sourceLabel(order.source);
+  }
+
+  function nextStatus(status) {
+    if (status === 'confirmed') return 'preparing';
+    if (status === 'preparing') return 'ready';
+    if (status === 'ready') return 'completed';
+    return null;
+  }
+
+  function nextStatusText(status) {
+    if (status === 'confirmed') return 'Start';
+    if (status === 'preparing') return 'Ready';
+    if (status === 'ready') return 'Complete';
+    return '';
+  }
+
+  function activeOrders() {
+    return orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled');
+  }
+
+  function salesOrders() {
+    return orders.filter((o) => o.status !== 'cancelled');
+  }
+
+  function sortedOrders(list = orders) {
+    const rank = { confirmed: 0, preparing: 1, ready: 2, completed: 3, cancelled: 4 };
+    return [...list].sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9) || b.createdAt - a.createdAt);
+  }
+
+  function orderItemsHtml(order) {
+    return order.items.map((item) => {
+      const option = item.option ? ' · ' + escapeHtml(item.option) : '';
+      const note = item.note ? '<div class="note">' + escapeHtml(item.note) + '</div>' : '';
+      return '<div class="item-row"><div><span class="qty">' + item.quantity + '</span>' + escapeHtml(item.name) + option + note + '</div><strong>' + formatMoney(item.subtotal) + '</strong></div>';
+    }).join('');
+  }
+
+  function orderCard(order, mode) {
+    const marks = getMarks(order.id);
+    const next = nextStatus(order.status);
+    const paymentBadge = marks.payment === 'paid'
+      ? '<span class="badge paid">Paid</span>'
+      : '<span class="badge pending">Pending</span>';
+    const posBadge = marks.pos === 'entered'
+      ? '<span class="badge entered">POS entered</span>'
+      : '<span class="badge pending">POS open</span>';
+    const kitchenAction = next
+      ? '<button class="primary-btn" onclick="advanceOrder(\'' + order.id + '\')">' + nextStatusText(order.status) + '</button>'
+      : '';
+    const cashierActions = mode === 'cashier'
+      ? '<button class="ghost-btn" onclick="setPayment(\'' + order.id + '\', \'' + (marks.payment === 'paid' ? 'unpaid' : 'paid') + '\')">' + (marks.payment === 'paid' ? 'Mark unpaid' : 'Mark paid') + '</button>' +
+        '<button class="ghost-btn" onclick="setPos(\'' + order.id + '\', \'' + (marks.pos === 'entered' ? 'not_entered' : 'entered') + '\')">' + (marks.pos === 'entered' ? 'Undo POS' : 'POS entered') + '</button>'
+      : '';
+    const footerActions = mode === 'cashier' ? cashierActions : kitchenAction;
+
+    const meta = '<div class="order-meta"><span class="badge pending">' + serviceLabel(order) + '</span></div>';
+    return '<article class="order-card" id="card-' + order.id + '">' +
+      '<header><div><div class="order-id">#' + order.id + '</div>' + meta + '<div style="margin-top:8px;"><span class="badge status ' + order.status + '">' + statusLabel(order.status) + '</span></div></div><div class="order-time">' + formatTime(order.createdAt) + '</div></header>' +
+      '<div class="body">' + orderItemsHtml(order) + (order.note ? '<div class="note">' + escapeHtml(order.note) + '</div>' : '') + '</div>' +
+      '<footer><div><div class="total">' + formatMoney(order.total) + '</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + paymentBadge + posBadge + '</div></div><div class="actions">' + footerActions + '</div></footer>' +
+    '</article>';
+  }
+
+  function render() {
+    const active = activeOrders();
+    const sales = salesOrders();
+    const totalSales = sales.reduce((sum, order) => sum + order.total, 0);
+    const average = sales.length ? Math.round(totalSales / sales.length) : 0;
+    const cashierOpen = sales.filter((order) => {
+      const marks = getMarks(order.id);
+      return marks.payment !== 'paid' || marks.pos !== 'entered';
+    }).length;
+
+    document.getElementById('metricSales').textContent = formatMoney(totalSales);
+    document.getElementById('metricOrders').textContent = sales.length;
+    document.getElementById('metricAverage').textContent = formatMoney(average);
+    document.getElementById('metricCashier').textContent = cashierOpen;
+    document.getElementById('activeBadge').textContent = active.length + ' active';
+
+    document.getElementById('navOverview').textContent = active.length;
+    document.getElementById('navOrders').textContent = orders.length;
+    document.getElementById('navKitchen').textContent = active.length;
+    document.getElementById('navCashier').textContent = cashierOpen;
+    document.getElementById('navAnalytics').textContent = sales.length;
+
+    renderCards('overviewGrid', sortedOrders(active).slice(0, 6), 'kitchen');
+    renderCards('kitchenGrid', sortedOrders(active), 'kitchen');
+    renderCards('cashierGrid', sortedOrders(sales), 'cashier');
+    renderOrdersTable();
+    renderPulse();
+    renderAnalytics();
+  }
+
+  async function loadMenu() {
+    try {
+      const response = await fetch('/api/admin/menu');
+      const data = await response.json();
+      menuItems = data.items || [];
+      setupMenuCategories();
+      renderMenu();
+    } catch {
+      document.getElementById('menuList').innerHTML = '<div class="empty"><strong>Menu unavailable</strong><p>Could not load menu data.</p></div>';
+    }
+  }
+
+  function setupMenuCategories() {
+    const select = document.getElementById('menuCategoryFilter');
+    if (select.options.length > 1) return;
+    const categories = [...new Set(menuItems.map(item => item.category))].sort();
+    for (const category of categories) {
+      const option = document.createElement('option');
+      option.value = category;
+      option.textContent = categoryLabel(category);
+      select.appendChild(option);
+    }
+  }
+
+  function renderMenu() {
+    document.getElementById('navMenu').textContent = menuItems.length;
+    const query = document.getElementById('menuSearch').value.trim().toLowerCase();
+    const category = document.getElementById('menuCategoryFilter').value;
+    const filtered = menuItems.filter((item) => {
+      const haystack = [item.name, item.nameZh, item.category, item.descriptionEn, item.descriptionFr].filter(Boolean).join(' ').toLowerCase();
+      return (!query || haystack.includes(query)) && (!category || item.category === category);
+    });
+
+    const list = document.getElementById('menuList');
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty"><strong>No menu items found</strong><p>Try another search or category.</p></div>';
+      return;
+    }
+
+    list.innerHTML = filtered.slice(0, 80).map((item) => menuRow(item)).join('');
+  }
+
+  function menuRow(item) {
+    const price = item.price ?? '';
+    const base = item.basePrice !== item.price ? '<p>Base: ' + (item.basePrice == null ? 'Variable' : formatMoney(item.basePrice)) + '</p>' : '';
+    const state = [
+      item.soldOut ? '<span class="badge status cancelled">Sold out</span>' : '',
+      item.hidden ? '<span class="badge pending">Hidden</span>' : '',
+      item.recommended ? '<span class="badge paid">Recommended</span>' : '',
+    ].join('');
+    return '<div class="menu-row">' +
+      '<div><h4>' + escapeHtml(item.name) + '</h4><p>' + categoryLabel(item.category) + (item.nameZh ? ' · ' + escapeHtml(item.nameZh) : '') + '</p>' + base + '<div class="order-meta">' + state + '</div></div>' +
+      '<input class="price-input" type="number" min="0" step="500" value="' + price + '" onchange="saveMenuPrice(\'' + item.id + '\', this.value)" placeholder="Variable" />' +
+      '<div class="menu-row-actions">' +
+        '<button class="ghost-btn toggle-btn warn ' + (item.soldOut ? 'active' : '') + '" onclick="toggleMenuFlag(\'' + item.id + '\', \'soldOut\')">Sold out</button>' +
+        '<button class="ghost-btn toggle-btn ' + (item.hidden ? 'active' : '') + '" onclick="toggleMenuFlag(\'' + item.id + '\', \'hidden\')">Hidden</button>' +
+        '<button class="ghost-btn toggle-btn ' + (item.recommended ? 'active' : '') + '" onclick="toggleMenuFlag(\'' + item.id + '\', \'recommended\')">Recommend</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  async function saveMenuPrice(id, value) {
+    const price = value === '' ? null : Number(value);
+    if (value !== '' && (!Number.isFinite(price) || price < 0)) {
+      showToast('Invalid price');
+      return;
+    }
+    await updateMenuItem(id, { price });
+  }
+
+  async function toggleMenuFlag(id, flag) {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) return;
+    await updateMenuItem(id, { [flag]: !item[flag] });
+  }
+
+  async function updateMenuItem(id, patch) {
+    const response = await fetch('/api/admin/menu/' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!response.ok) {
+      showToast('Menu update failed');
+      return;
+    }
+    const data = await response.json();
+    const idx = menuItems.findIndex(item => item.id === id);
+    if (idx >= 0 && data.item) menuItems[idx] = data.item;
+    renderMenu();
+  }
+
+  function categoryLabel(category) {
+    return String(category || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function renderCards(id, list, mode) {
+    const el = document.getElementById(id);
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1;"><strong>No orders yet</strong><p>Confirmed AI orders will appear here in real time.</p></div>';
+      return;
+    }
+    el.innerHTML = list.map((order) => orderCard(order, mode)).join('');
+  }
+
+  function renderOrdersTable() {
+    const tbody = document.getElementById('ordersTable');
+    if (orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty"><strong>No orders yet</strong><p>Start from the customer chat to create a confirmed order.</p></td></tr>';
+      return;
+    }
+    tbody.innerHTML = sortedOrders(orders).map((order) => {
+      const marks = getMarks(order.id);
+      const items = order.items.map((item) => item.quantity + 'x ' + escapeHtml(item.name)).join('<br>');
+      return '<tr><td><strong>#' + order.id + '</strong></td><td>' + serviceLabel(order) + '</td><td>' + items + '</td><td><span class="badge status ' + order.status + '">' + statusLabel(order.status) + '</span></td><td>' + (marks.payment === 'paid' ? '<span class="badge paid">Paid</span>' : '<span class="badge pending">Pending</span>') + '</td><td>' + (marks.pos === 'entered' ? '<span class="badge entered">Entered</span>' : '<span class="badge pending">Open</span>') + '</td><td><strong>' + formatMoney(order.total) + '</strong></td><td>' + formatTime(order.createdAt) + '</td></tr>';
+    }).join('');
+  }
+
+  function renderPulse() {
+    const active = activeOrders();
+    const confirmed = active.filter((o) => o.status === 'confirmed').length;
+    const preparing = active.filter((o) => o.status === 'preparing').length;
+    const ready = active.filter((o) => o.status === 'ready').length;
+    const pendingCashier = salesOrders().filter((order) => getMarks(order.id).payment !== 'paid').length;
+
+    document.getElementById('pulseList').innerHTML = [
+      ['New orders', confirmed],
+      ['In preparation', preparing],
+      ['Ready to serve', ready],
+      ['Awaiting payment', pendingCashier],
+    ].map(([label, value]) => '<div class="insight"><span>' + label + '</span><strong>' + value + '</strong></div>').join('');
+  }
+
+  function renderAnalytics() {
+    const itemMap = new Map();
+    for (const order of salesOrders()) {
+      for (const item of order.items) {
+        const existing = itemMap.get(item.name) || { name: item.name, qty: 0, sales: 0 };
+        existing.qty += item.quantity;
+        existing.sales += item.subtotal;
+        itemMap.set(item.name, existing);
+      }
+    }
+    const topItems = [...itemMap.values()].sort((a, b) => b.qty - a.qty || b.sales - a.sales).slice(0, 8);
+    document.getElementById('topItemsTable').innerHTML = topItems.length
+      ? topItems.map((item) => '<tr><td><strong>' + escapeHtml(item.name) + '</strong></td><td>' + item.qty + '</td><td>' + formatMoney(item.sales) + '</td></tr>').join('')
+      : '<tr><td colspan="3" class="empty"><strong>No sales data yet</strong><p>Top items will calculate once orders arrive.</p></td></tr>';
+
+    const total = salesOrders().reduce((sum, order) => sum + order.total, 0);
+    const paid = salesOrders().filter((order) => getMarks(order.id).payment === 'paid').reduce((sum, order) => sum + order.total, 0);
+    const pos = salesOrders().filter((order) => getMarks(order.id).pos === 'entered').reduce((sum, order) => sum + order.total, 0);
+    document.getElementById('reconcileList').innerHTML = [
+      ['AI order value', formatMoney(total)],
+      ['Marked paid', formatMoney(paid)],
+      ['Entered in POS', formatMoney(pos)],
+      ['Difference', formatMoney(Math.max(total - pos, 0))],
+    ].map(([label, value]) => '<div class="insight"><span>' + label + '</span><strong>' + value + '</strong></div>').join('');
+  }
+
+  async function advanceOrder(id) {
+    const order = orders.find((o) => o.id === id);
+    if (!order) return;
+    const status = nextStatus(order.status);
+    if (!status) return;
+    await fetch('/api/orders/' + encodeURIComponent(id) + '/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3100);
+  }
+
+  function notifySound() {
+    if (!soundEnabled) return;
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 880;
+    gain.gain.value = 0.1;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+    osc.stop(audioCtx.currentTime + 0.18);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function connectSSE() {
     const es = new EventSource('/api/orders/stream');
 
-    es.addEventListener('init', function(e) {
-      orders = JSON.parse(e.data);
+    es.addEventListener('init', (event) => {
+      orders = JSON.parse(event.data);
       render();
     });
 
-    es.addEventListener('new_order', function(e) {
-      const order = JSON.parse(e.data);
-      // Replace if exists, add if new
-      const idx = orders.findIndex(o => o.id === order.id);
-      if (idx >= 0) orders[idx] = order;
-      else orders.unshift(order);
-
-      // Flash the new card
+    es.addEventListener('new_order', (event) => {
+      const order = JSON.parse(event.data);
+      const idx = orders.findIndex((o) => o.id === order.id);
+      if (idx >= 0) {
+        orders[idx] = order;
+      } else {
+        orders.unshift(order);
+        showToast('New order #' + order.id);
+        notifySound();
+      }
       render();
       const card = document.getElementById('card-' + order.id);
-      if (card && idx < 0) {
+      if (card) {
         card.classList.add('new');
         setTimeout(() => card.classList.remove('new'), 500);
       }
-
-      if (idx < 0) {
-        showToast('🔔 New order #' + order.id + '!');
-        notifySound();
-      }
     });
 
-    es.addEventListener('order_updated', function(e) {
-      const order = JSON.parse(e.data);
-      const idx = orders.findIndex(o => o.id === order.id);
+    es.addEventListener('order_updated', (event) => {
+      const order = JSON.parse(event.data);
+      const idx = orders.findIndex((o) => o.id === order.id);
       if (idx >= 0) orders[idx] = order;
       render();
     });
 
-    es.onerror = function() {
-      // Reconnect after 2 seconds
+    es.onerror = () => {
+      es.close();
       setTimeout(connectSSE, 2000);
     };
   }
 
+  function tickClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  tickClock();
+  setInterval(tickClock, 10000);
   connectSSE();
+  loadMenu();
+  render();
 </script>
 </body>
 </html>

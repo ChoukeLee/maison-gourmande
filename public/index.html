@@ -162,6 +162,14 @@
     top: 4px;
   }
 
+  .menu-img {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 8px;
+    background: #f6efe3;
+  }
+
   .msg.thinking {
     align-self: flex-start;
     background: var(--wa-bubble-recv);
@@ -192,6 +200,19 @@
     letter-spacing: 0.5px;
     color: var(--wa-teal);
     margin-bottom: 6px;
+  }
+  .order-card .oc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .order-card .oc-meta span {
+    border-radius: 999px;
+    background: #f2eee6;
+    color: var(--wa-text-dim);
+    padding: 2px 8px;
+    font-size: 11px;
   }
   .order-card .oc-item {
     display: flex;
@@ -294,6 +315,7 @@
   <!-- Order card -->
   <div class="order-card" id="orderCard">
     <div class="oc-title" id="ocTitle">Your Order</div>
+    <div class="oc-meta" id="ocMeta"></div>
     <div id="ocItems"></div>
     <div class="oc-total" id="ocTotal"></div>
   </div>
@@ -313,6 +335,7 @@
   const chatEl = document.getElementById('chat');
   const orderCard = document.getElementById('orderCard');
   const ocTitle = document.getElementById('ocTitle');
+  const ocMeta = document.getElementById('ocMeta');
   const ocItems = document.getElementById('ocItems');
   const ocTotal = document.getElementById('ocTotal');
   const inputEl = document.getElementById('input');
@@ -321,6 +344,11 @@
   let loading = false;
   let typingTimer = null;
   let isTyping = false;
+  const params = new URLSearchParams(window.location.search);
+  const tableNumber = params.get('table') || params.get('tableNumber') || '';
+  const rawOrderType = params.get('type') || params.get('orderType') || '';
+  const orderType = ['dine_in', 'takeaway', 'delivery'].includes(rawOrderType) ? rawOrderType : 'dine_in';
+  const source = 'web';
 
   function now() {
     const d = new Date();
@@ -347,6 +375,23 @@
     div.className = 'msg ' + role;
     div.innerHTML = formatText(text) + '<span class="time">' + now() + '</span>';
     chatEl.appendChild(div);
+    scrollDown();
+  }
+
+  function addMenuImage(url) {
+    const div = document.createElement('div');
+    div.className = 'msg recv';
+    const img = document.createElement('img');
+    img.className = 'menu-img';
+    img.alt = 'Maison Gourmande menu';
+    img.src = url;
+    div.appendChild(img);
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = now();
+    div.appendChild(time);
+    chatEl.appendChild(div);
+    img.addEventListener('load', scrollDown);
     scrollDown();
   }
 
@@ -389,6 +434,12 @@
       ocTitle.style.color = '#027eb5';
     }
 
+    const meta = [];
+    if (order.tableNumber) meta.push('Table ' + order.tableNumber);
+    meta.push(orderTypeLabel(order.orderType || orderType));
+    meta.push(sourceLabel(order.source || source));
+    ocMeta.innerHTML = meta.map(m => '<span>' + m + '</span>').join('');
+
     ocItems.innerHTML = order.items.map(i => {
       const name = i.nameZh ? i.name + ' (' + i.nameZh + ')' : i.name;
       const opt = i.option ? ' · ' + i.option : '';
@@ -398,6 +449,18 @@
 
     ocTotal.innerHTML = '<span>Total</span><span>' + order.total.toLocaleString() + ' CFA</span>';
     scrollDown();
+  }
+
+  function orderTypeLabel(type) {
+    return {
+      dine_in: 'Dine-in',
+      takeaway: 'Takeaway',
+      delivery: 'Delivery',
+    }[type] || 'Dine-in';
+  }
+
+  function sourceLabel(value) {
+    return value === 'whatsapp' ? 'WhatsApp' : 'Web QR';
   }
 
   async function send() {
@@ -414,7 +477,7 @@
       const resp = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, sessionId }),
+        body: JSON.stringify({ message: text, sessionId, tableNumber, orderType, source }),
       });
       const data = await resp.json();
       hideTyping();
@@ -423,6 +486,7 @@
         addSystem('Error: ' + data.error);
       } else {
         addBubble('recv', data.reply);
+        if (data.menuImageUrl) addMenuImage(data.menuImageUrl);
         updateOrder(data.order);
       }
     } catch (e) {

@@ -1,4 +1,5 @@
 import { menuDatabase } from "../data/menu-database.js";
+import { getMenuOverride, getMenuOverrides } from "../server/menu-override-store.js";
 import { MenuCategory, CATEGORY_LABELS, type MenuItem, type SearchResult, type SearchLanguage, type MenuDatabase } from "../types/menu.js";
 
 /**
@@ -206,7 +207,9 @@ export function search(query: string, limit = 10): SearchResult[] {
   const expandedTokens = expandTokens(tokens);
   const results: SearchResult[] = [];
 
-  for (const item of menuDatabase.allItems) {
+  for (const baseItem of menuDatabase.allItems) {
+    if (isHidden(baseItem.id)) continue;
+    const item = applyOverride(baseItem);
     const scored = scoreItem(item, expandedTokens);
     if (scored) {
       results.push({ item, score: scored.score, matchType: scored.matchType });
@@ -229,14 +232,18 @@ export function searchByCategory(query: string, category: MenuCategory, limit = 
  * Get all items in a category.
  */
 export function getByCategory(category: MenuCategory): MenuItem[] {
-  return menuDatabase.categories[category] ?? [];
+  return (menuDatabase.categories[category] ?? [])
+    .filter(item => !isHidden(item.id))
+    .map(applyOverride);
 }
 
 /**
  * Get a single item by its unique ID slug.
  */
 export function getById(id: string): MenuItem | undefined {
-  return menuDatabase.allItems.find(item => item.id === id);
+  const item = menuDatabase.allItems.find(item => item.id === id);
+  if (!item || isHidden(item.id)) return undefined;
+  return applyOverride(item);
 }
 
 /**
@@ -251,8 +258,9 @@ export function getRecommendations(preferences: string[], excludeIds: string[] =
   const expandedPrefs = expandTokens(prefTokens);
   const results: SearchResult[] = [];
 
-  for (const item of menuDatabase.allItems) {
-    if (excludeIds.includes(item.id)) continue;
+  for (const baseItem of menuDatabase.allItems) {
+    if (excludeIds.includes(baseItem.id) || isHidden(baseItem.id)) continue;
+    const item = applyOverride(baseItem);
     const scored = scoreItem(item, expandedPrefs);
     if (scored && scored.score >= 30) { // minimum relevance threshold
       results.push({ item, score: scored.score, matchType: scored.matchType });
@@ -269,13 +277,13 @@ export function getRecommendations(preferences: string[], excludeIds: string[] =
 export function getCategories(): { id: MenuCategory; labels: { fr: string; en: string; zh: string }; itemCount: number }[] {
   return Object.values(MenuCategory)
     .filter(cat => {
-      const items = menuDatabase.categories[cat];
+      const items = (menuDatabase.categories[cat] ?? []).filter(item => !isHidden(item.id));
       return items && items.length > 0;
     })
     .map(cat => ({
       id: cat,
       labels: CATEGORY_LABELS[cat],
-      itemCount: menuDatabase.categories[cat]?.length ?? 0,
+      itemCount: (menuDatabase.categories[cat] ?? []).filter(item => !isHidden(item.id)).length,
     }));
 }
 
@@ -284,4 +292,37 @@ export function getCategories(): { id: MenuCategory; labels: { fr: string; en: s
  */
 export function getDatabase(): Readonly<MenuDatabase> {
   return menuDatabase;
+}
+
+export function getAdminMenuItems(): (MenuItem & { soldOut: boolean; hidden: boolean; recommended: boolean; overrideNote?: string; basePrice: number | null })[] {
+  const overrides = getMenuOverrides();
+  return menuDatabase.allItems.map(item => {
+    const override = overrides[item.id];
+    const effective = applyOverride(item);
+    return {
+      ...effective,
+      basePrice: item.price,
+      soldOut: override?.soldOut ?? false,
+      hidden: override?.hidden ?? false,
+      recommended: override?.recommended ?? false,
+      overrideNote: override?.note,
+    };
+  });
+}
+
+export function isSoldOut(id: string): boolean {
+  return getMenuOverride(id)?.soldOut ?? false;
+}
+
+function isHidden(id: string): boolean {
+  return getMenuOverride(id)?.hidden ?? false;
+}
+
+function applyOverride(item: MenuItem): MenuItem {
+  const override = getMenuOverride(item.id);
+  if (!override) return item;
+  return {
+    ...item,
+    price: override.price !== undefined ? override.price : item.price,
+  };
 }

@@ -1,9 +1,14 @@
-import { getById } from "./menu-search.js";
+import { getById, isSoldOut } from "./menu-search.js";
 import type { MenuItem } from "../types/menu.js";
 import {
   OrderStatus,
   STATUS_TRANSITIONS,
   STATUS_LABELS,
+  OrderSource,
+  OrderType,
+  PaymentMethod,
+  PaymentStatus,
+  PosStatus,
   OrderError,
   type CartItem,
   type Order,
@@ -66,8 +71,14 @@ function cloneOrder(order: Order): Order {
 export function createOrder(): Order {
   return {
     id: generateId(),
+    storeId: "maison-gourmande",
+    source: OrderSource.WEB,
+    orderType: OrderType.DINE_IN,
     items: [],
     status: OrderStatus.DRAFT,
+    paymentStatus: PaymentStatus.UNPAID,
+    paymentMethod: PaymentMethod.UNKNOWN,
+    posStatus: PosStatus.NOT_ENTERED,
     total: 0,
     itemCount: 0,
     createdAt: now(),
@@ -99,6 +110,9 @@ export function addToCart(
   const menuItem = getById(menuItemId);
   if (!menuItem) {
     throw new OrderOperationError(OrderError.ITEM_NOT_FOUND, order, `Item "${menuItemId}" not found`);
+  }
+  if (isSoldOut(menuItemId)) {
+    throw new OrderOperationError(OrderError.ITEM_UNAVAILABLE, order, `"${menuItem.name}" is sold out today`);
   }
   if (menuItem.price === null) {
     throw new OrderOperationError(OrderError.PRICE_NOT_CONFIRMED, order, `Price for "${menuItem.name}" is not yet confirmed`);

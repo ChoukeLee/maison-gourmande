@@ -6,17 +6,64 @@
 
 import "dotenv/config";
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, downloadMediaMessage } from "@whiskeysockets/baileys";
+// qrcode does not ship TypeScript declarations in this project.
+// @ts-expect-error no bundled declarations
 import QRCode from "qrcode";
 import fs from "node:fs/promises";
-import { createReadStream } from "node:fs";
 import http from "node:http";
-import OpenAI from "openai";
+import { pipeline } from "@xenova/transformers";
+import { OggOpusDecoder } from "ogg-opus-decoder";
 import { chat, newConversation } from "../src/services/agent.js";
+import { getAdminMenuItems } from "../src/services/menu-search.js";
+import { detectMenuImageRequest, renderMenuImageSvg, titleForMenuImage } from "../src/server/menu-image.js";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages/messages.js";
 import type { Order } from "../src/types/order.js";
+import { OrderSource } from "../src/types/order.js";
 import type { ConversationMemory } from "../src/types/memory.js";
 
-const openai = new OpenAI({ apiKey: process.env["OPENAI_API_KEY"] });
+// Local Whisper transcriber (lazy init — downloads ~150MB model on first use)
+let transcriber: any = null;
+async function transcribe(audioPath: string): Promise<string> {
+  if (!transcriber) {
+    console.log("Loading local Whisper model (first time ~30s)...");
+    transcriber = await pipeline("automatic-speech-recognition", "Xenova/whisper-tiny", {
+      quantized: true,
+    });
+    console.log("Whisper model ready ✓");
+  }
+  // Decode OGG/Opus → raw PCM samples
+  const oggBuf = await fs.readFile(audioPath);
+  const decoder = new OggOpusDecoder();
+  await decoder.ready;
+  const decoded = await decoder.decodeFile(oggBuf) as any;
+  // decoded.samples is a Float32Array, decoded.sampleRate is the sample rate
+  const audio = decoded.samples;
+  const sampleRate = decoded.sampleRate as number;
+
+  // Resample to 16kHz if needed
+  let audio16k = audio;
+  if (sampleRate !== 16000) {
+    audio16k = resample(audio, sampleRate, 16000);
+  }
+
+  const result = await transcriber(audio16k);
+  return result.text as string;
+}
+
+// Simple resampling (linear interpolation)
+function resample(data: Float32Array, fromRate: number, toRate: number): Float32Array {
+  const ratio = fromRate / toRate;
+  const newLen = Math.floor(data.length / ratio);
+  const result = new Float32Array(newLen);
+  for (let i = 0; i < newLen; i++) {
+    const srcIdx = i * ratio;
+    const srcFloor = Math.floor(srcIdx);
+    const srcCeil = Math.min(srcFloor + 1, data.length - 1);
+    const frac = srcIdx - srcFloor;
+    result[i] = data[srcFloor]! * (1 - frac) + data[srcCeil]! * frac;
+  }
+  return result;
+}
 
 // Per-customer sessions
 const sessions = new Map<string, { history: MessageParam[]; order: Order; memory: ConversationMemory }>();
@@ -89,23 +136,18 @@ async function startBot() {
     let text = msg.message.conversation || msg.message.extendedTextMessage?.text;
 
     // Handle voice/audio messages
-    if (!text && (msg.message.audioMessage || msg.message.pttMessage)) {
+    if (!text && msg.message.audioMessage) {
       console.log(`🎤 Voice message from ${phone.split("@")[0]}, transcribing...`);
       try {
         const buffer = await downloadMediaMessage(msg, "buffer", {}) as Buffer;
         const tmpPath = `.baileys_auth/voice_${Date.now()}.ogg`;
         await fs.writeFile(tmpPath, buffer);
 
-        const transcription = await openai.audio.transcriptions.create({
-          model: "whisper-1",
-          file: createReadStream(tmpPath),
-          language: "auto",
-        });
+        text = await transcribe(tmpPath);
 
         // Clean up temp file
         fs.unlink(tmpPath).catch(() => {});
 
-        text = transcription.text;
         console.log(`🎤 Transcribed: "${text}"`);
       } catch (e) {
         console.error("Transcription failed:", e);
@@ -119,8 +161,29 @@ async function startBot() {
     console.log(`📱 ${phone.split("@")[0]}: ${text}`);
 
     const session = getSession(phone);
+    session.order.source = OrderSource.WHATSAPP;
 
     try {
+      const menuImageRequest = detectMenuImageRequest(text);
+      if (menuImageRequest) {
+        const items = getAdminMenuItems()
+          .filter(item => !item.hidden)
+          .filter(item => !menuImageRequest.category || item.category === menuImageRequest.category)
+          .filter(item => !menuImageRequest.recommended || item.recommended)
+          .sort((a, b) => Number(b.recommended) - Number(a.recommended) || (a.price ?? 0) - (b.price ?? 0));
+        const title = titleForMenuImage(menuImageRequest.category, menuImageRequest.recommended);
+        const svg = renderMenuImageSvg({ ...title, items });
+
+        await sock.sendMessage(phone, { text: "Bien sûr. Voici la carte actuelle." });
+        await sock.sendMessage(phone, {
+          document: Buffer.from(svg, "utf8"),
+          mimetype: "image/svg+xml",
+          fileName: "maison-gourmande-menu.svg",
+        });
+        console.log(`ðŸ–¼ï¸ â†’ ${phone.split("@")[0]}: menu image sent`);
+        return;
+      }
+
       const result = await chat(text, session.history, session.order, session.memory);
       session.history = result.history;
       session.order = result.order;
